@@ -3,7 +3,7 @@ import asyncio
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from OpusMusicBot.core.bot import app
-from OpusMusicBot.call import Anony
+from OpusMusicBot.core.call import Anony
 from OpusMusicBot import yt
 from OpusMusicBot.utils.db import get_mode, set_mode, add_to_queue, get_queue, pop_queue
 
@@ -37,6 +37,9 @@ async def play_handler(client, message: Message):
     try:
         file_path = await yt.download_from_yt(query) if "youtube.com" in query or "youtu.be" in query else await yt.search_and_download(query)
         title = os.path.basename(file_path)
+        # Validate file format to align with call.py
+        if not file_path.lower().endswith(('.mp3', '.wav', '.ogg')):
+            raise ValueError(f"Unsupported audio format for file: {file_path}")
     except Exception as e:
         return await msg.edit(f"❌ Failed to download: `{str(e)}`")
 
@@ -51,6 +54,42 @@ async def play_handler(client, message: Message):
         queue = await get_queue(chat_id)
         pos = len(queue)
         await msg.edit(f"✅ Added to Mini App queue at position `{pos}`:\n`{title}`")
+
+
+@app.on_message(filters.command("skip") & filters.group)
+async def skip_handler(client, message: Message):
+    chat_id = message.chat.id
+    mode = await get_mode(chat_id)
+
+    if not mode:
+        return await message.reply_text("🎵 No playback mode set. Use /play first.", quote=True)
+
+    queue = await get_queue(chat_id)
+    if not queue:
+        return await message.reply_text("🎵 Queue is empty. Nothing to skip.", quote=True)
+
+    msg = await message.reply_text("⏭ Skipping...", quote=True)
+
+    try:
+        # Pop the current song
+        await pop_queue(chat_id)
+        queue = await get_queue(chat_id)
+
+        if not queue:
+            # No more songs in queue, leave the call
+            await Anony.leave_call(chat_id)
+            await msg.edit("✅ Queue is empty. Left the call.")
+            return
+
+        # Play the next song
+        file_path, title = queue[0]
+        # Validate file format to align with call.py
+        if not file_path.lower().endswith(('.mp3', '.wav', '.ogg')):
+            raise ValueError(f"Unsupported audio format for file: {file_path}")
+        await Anony.skip_stream(chat_id, file_path)
+        await msg.edit(f"✅ Skipped to:\n`{title}`")
+    except Exception as e:
+        await msg.edit(f"❌ Skip error: {str(e)}")
 
 
 @app.on_callback_query(filters.regex(r"^setmode_(\-?\d+)_(miniapp|vc)$"))
