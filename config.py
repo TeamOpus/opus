@@ -1,5 +1,6 @@
 import os
 import warnings
+from os import getenv
 from dotenv import load_dotenv
 
 # Load .env file if it exists
