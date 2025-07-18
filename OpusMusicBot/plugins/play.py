@@ -9,7 +9,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from OpusMusicBot.core.bot import app
 from OpusMusicBot.core.call import Anony
 from OpusMusicBot import yt
-from OpusMusicBot.utils.db import get_mode, set_mode, get_queue
+from OpusMusicBot.plugins.db import get_mode, set_mode, get_queue
 from config import WEB_URL
 
 
