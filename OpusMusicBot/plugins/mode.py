@@ -1,4 +1,4 @@
-from pyrogram import filters
+from pyrogram import Client, filters
 from pyrogram.types import Message
 from OpusMusicBot.core.bot import app
 from OpusMusicBot.utils.db import set_mode
