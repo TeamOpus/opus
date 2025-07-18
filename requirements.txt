@@ -6,3 +6,4 @@ httpx
 yt-dlp
 pymongo
 python-dotenv
+youtubesearchpython
