@@ -1,0 +1,8 @@
+pyrogram==2.0.106
+tgcrypto
+pytgcalls==2.2.3
+aiohttp
+httpx
+yt-dlp
+pymongo
+python-dotenv
