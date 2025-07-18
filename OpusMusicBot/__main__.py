@@ -1,6 +1,6 @@
 from OpusMusicBot.core.bot import app
 from OpusMusicBot.core.userbot import userbot
-from OpusMusicBot.call import Anony
+from OpusMusicBot.core.call import Anony
 
 from pyrogram import idle
 import asyncio
