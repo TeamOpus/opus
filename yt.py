@@ -1,11 +1,10 @@
 import re
 import os
-from OpusMusicBot import app
 import httpx
-from config import API_URL
 import yt_dlp
+from youtubesearchpython import VideosSearch
+from config import API_URL
 
-API_URL = "f{API_URL}?direct&id="
 COOKIES_FILE = "cookies/cookies.txt"
 
 YTDL_OPTS = {
@@ -29,14 +28,17 @@ def extract_video_id(url: str) -> str | None:
     match = yt_regex.search(url)
     return match.group(1) if match else None
 
+async def search(query: str) -> str:
+    try:
+        results = VideosSearch(query, limit=1).result()
+        if not results["result"]:
+            raise Exception("No search results found.")
+        return results["result"][0]["id"]  # Return video ID
+    except Exception as e:
+        raise Exception(f"Search failed: {str(e)}")
+
 async def search_and_download(query: str) -> str:
-    from youtubesearchpython import VideosSearch
-
-    results = VideosSearch(query, limit=1).result()
-    if not results["result"]:
-        raise Exception("No search results.")
-
-    video_url = results["result"][0]["link"]
+    video_url = f"https://www.youtube.com/watch?v={await search(query)}"
     return await download_from_yt(video_url)
 
 async def download_from_yt(url: str) -> str:
@@ -47,7 +49,7 @@ async def download_from_yt(url: str) -> str:
 
 async def fallback_api_download(video_id: str) -> str:
     async with httpx.AsyncClient() as client:
-        r = await client.get(API_URL + video_id, timeout=30)
+        r = await client.get(f"{API_URL}?direct&id={video_id}", timeout=30)
         if r.status_code == 200:
             data = r.json()
             if data.get("status") == 200:
