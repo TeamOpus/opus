@@ -3,6 +3,7 @@ import importlib
 import signal
 import sys
 import logging
+import os
 from pyrogram import idle
 from OpusMusicBot.core.bot import app
 from OpusMusicBot.core.userbot import userbot
@@ -15,24 +16,28 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# List of plugin modules (adjust based on your plugins directory)
-ALL_MODULES = [
-    # Add your plugin module names here, e.g., "music", "admin", "help"
-    # Or dynamically discover them:
-]
-# Optional: Dynamically discover plugins
-import os
+# List of plugin modules
+ALL_MODULES = []
+# Dynamically discover plugins if directory exists
 plugins_dir = os.path.join(os.path.dirname(__file__), "OpusMusicBot/plugins")
-ALL_MODULES = [
-    module[:-3] for module in os.listdir(plugins_dir)
-    if module.endswith(".py") and module != "__init__.py"
-]
+if os.path.exists(plugins_dir):
+    ALL_MODULES = [
+        module[:-3] for module in os.listdir(plugins_dir)
+        if module.endswith(".py") and module != "__init__.py"
+    ]
 
 async def run():
-    # Load plugins
-    for module in ALL_MODULES:
-        importlib.import_module(f"OpusMusicBot.plugins.{module}")
-    logger.info(f"Successfully imported {len(ALL_MODULES)} plugin(s) from OpusMusicBot.plugins")
+    # Load plugins if available
+    if ALL_MODULES:
+        for module in ALL_MODULES:
+            try:
+                importlib.import_module(f"OpusMusicBot.plugins.{module}")
+                logger.info(f"Imported plugin: {module}")
+            except Exception as e:
+                logger.error(f"Failed to import plugin {module}: {str(e)}")
+        logger.info(f"Successfully imported {len(ALL_MODULES)} plugin(s) from OpusMusicBot.plugins")
+    else:
+        logger.info("No plugins found in OpusMusicBot/plugins. Skipping plugin loading.")
 
     await app.start()
     await userbot.start()
