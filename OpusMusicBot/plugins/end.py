@@ -1,7 +1,7 @@
 from pyrogram import filters
 from pyrogram.types import Message
 from OpusMusicBot.core.bot import app
-from OpusMusicBot.call import Anony
+from OpusMusicBot.core.call import Anony
 from OpusMusicBot.utils.db import get_mode, clear_queue
 
 @app.on_message(filters.command("end") & filters.group)
