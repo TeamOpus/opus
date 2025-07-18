@@ -1,8 +1,8 @@
 pyrogram==2.0.106
 tgcrypto
-pytgcalls==2.1.0
+pytgcalls==1.2.9
 aiohttp
-httpx==0.27.0
+httpx
 python-telegram-bot
 yt-dlp
 pymongo
