@@ -1,23 +1,28 @@
-from pytgcalls import GroupCallFactory
-from pytgcalls.types.input_stream import InputStream
-from pytgcalls.types.input_stream.input_file import InputAudioStream
-from pytgcalls.exceptions import GroupCallNotFound, NoActiveGroupCall
-
+import asyncio
+import os
+from pytgcalls import PyTgCalls
+from pytgcalls.types import MediaStream, AudioQuality
+from pytgcalls.exceptions import NoActiveGroupCall, AlreadyJoinedError
+from pyrogram import Client
 from OpusMusicBot.core.userbot import userbot
 from OpusMusicBot.utils.db import add_active_chat, remove_active_chat
 
-import os
-import asyncio
-
 class MusicCall:
     def __init__(self):
-        """Initialize GroupCallFactory with userbot client."""
-        self.call = GroupCallFactory(userbot).get_file_group_call()
+        """Initialize PyTgCalls with userbot client."""
+        self.client = Client(
+            name="MusicBot",
+            api_id=os.getenv("API_ID"),  # Ensure API_ID is set in .env
+            api_hash=os.getenv("API_HASH"),  # Ensure API_HASH is set in .env
+            session_string=os.getenv("STRING_SESSION"),  # Ensure STRING_SESSION is set in .env
+        )
+        self.call = PyTgCalls(self.client)
 
     async def start(self):
-        """Start the GroupCall client."""
+        """Start the PyTgCalls client."""
         try:
             await self.call.start()
+            print("PyTgCalls client started successfully.")
         except Exception as e:
             raise RuntimeError(f"Failed to start PyTgCalls: {str(e)}")
 
@@ -30,17 +35,17 @@ class MusicCall:
             raise ValueError(f"Unsupported audio format for file: {file_path}")
 
         try:
-            await self.call.join_group_call(
-                chat_id,
-                InputStream(
-                    InputAudioStream(
-                        file_path,
-                    )
-                )
+            stream = MediaStream(
+                file_path,
+                audio_parameters=AudioQuality.STUDIO,
             )
+            await self.call.join_group_call(chat_id, stream)
             add_active_chat(chat_id)
-        except (GroupCallNotFound, NoActiveGroupCall) as e:
-            raise RuntimeError(f"Failed to join group call: {str(e)}")
+            print(f"Joined group call in chat {chat_id} with file {file_path}")
+        except NoActiveGroupCall:
+            raise RuntimeError("No active group call found.")
+        except AlreadyJoinedError:
+            raise RuntimeError("Already joined a group call.")
         except Exception as e:
             raise RuntimeError(f"Unexpected error joining group call: {str(e)}")
 
@@ -49,8 +54,9 @@ class MusicCall:
         try:
             await self.call.leave_group_call(chat_id)
             remove_active_chat(chat_id)
-        except (GroupCallNotFound, NoActiveGroupCall) as e:
-            raise RuntimeError(f"Failed to leave group call: {str(e)}")
+            print(f"Left group call in chat {chat_id}")
+        except NoActiveGroupCall:
+            raise RuntimeError("No active group call to leave.")
         except Exception as e:
             raise RuntimeError(f"Unexpected error leaving group call: {str(e)}")
 
@@ -63,16 +69,14 @@ class MusicCall:
             raise ValueError(f"Unsupported audio format for file: {file_path}")
 
         try:
-            await self.call.change_stream(
-                chat_id,
-                InputStream(
-                    InputAudioStream(
-                        file_path,
-                    )
-                )
+            stream = MediaStream(
+                file_path,
+                audio_parameters=AudioQuality.STUDIO,
             )
-        except (GroupCallNotFound, NoActiveGroupCall) as e:
-            raise RuntimeError(f"Failed to change stream: {str(e)}")
+            await self.call.change_stream(chat_id, stream)
+            print(f"Changed stream in chat {chat_id} to {file_path}")
+        except NoActiveGroupCall:
+            raise RuntimeError("No active group call to change stream.")
         except Exception as e:
             raise RuntimeError(f"Unexpected error changing stream: {str(e)}")
 
