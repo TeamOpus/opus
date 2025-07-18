@@ -2,9 +2,10 @@ import re
 import os
 from OpusMusicBot import app
 import httpx
+from config import API_URL
 import yt_dlp
 
-API_URL2 = "f{API_URL}?direct&id="
+API_URL = "f{API_URL}?direct&id="
 COOKIES_FILE = "cookies/cookies.txt"
 
 YTDL_OPTS = {
