@@ -5,7 +5,7 @@ from pytgcalls.types import MediaStream, AudioQuality
 from pytgcalls.exceptions import NoActiveGroupCall, AlreadyJoinedError
 from pyrogram import Client
 from OpusMusicBot.core.userbot import userbot
-from OpusMusicBot.utils.db import add_active_chat, remove_active_chat
+from OpusMusicBot.plugins.db import add_active_chat, remove_active_chat
 
 class MusicCall:
     def __init__(self):
