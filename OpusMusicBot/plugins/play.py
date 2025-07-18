@@ -3,7 +3,7 @@ import asyncio
 import re
 import aiohttp
 
-from pyrogram import filters
+from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 from OpusMusicBot.core.bot import app
